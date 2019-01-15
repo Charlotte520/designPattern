@@ -1,0 +1,78 @@
+1. proxy模式：为其他对象提供一种proxy，来控制对该对象的访问
+
+》静态代理：运行前确定proxy的字节码文件、proxy和object的关系。缺点：若要代理的方法很多，要为每种方法都进行代理。每增加一个方法，要修改实现类和代理类。
+
+//接口
+interface IUserDao{
+    void save();
+    void find();
+}
+
+//目标对象
+class UserDao implements IUserDao{
+
+    @Override
+    public void save() {
+        System.out.println("模拟：保存用户！");
+    }
+
+    @Override
+    public void find() {
+        System.out.println("模拟：查询用户！");
+    }
+}
+
+//静态代理：实现与目标对象相同的接口
+class UserDaoProxy implements IUserDao {
+
+    private IUserDao target = new UserDao();
+    @Override
+    public void save() {
+        System.out.println("代理操作： 开启事务...");
+        target.save();
+        System.out.println("代理操作： 体交事务...");
+    }
+
+    @Override
+    public void find() {
+        target.find();
+    }
+}
+
+
+》动态代理：
+1)JVM反射动态生成代理类的源码，运行时确定proxy和object的关系。缺点：object没有interface时不能用。
+
+//动态代理工厂，给多个目标对象生成代理对象
+class ProxyFactory {
+    private Object target;
+    
+    public ProxyFactory(Object target) {
+        this.target = target;
+    }
+    
+    public Object getProxyInstance() {
+        Object proxy = Proxy.newProxyInstance(
+                target.getClass().getClassLoader(),
+                target.getClass().getInterfaces(),
+                new InvocationHandler() {  //执行代理对象方法时调用
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        Object result = null;
+                        
+                        System.out.println("代理操作： 开启事务...");
+                        result = method.invoke(target, args);
+                        System.out.println("代理操作： 提交事务...");
+                        return result;
+                    }
+                }
+        );
+        return proxy;
+    }
+}
+
+2) CGLIB：动态生成的子类继承target。要求：target不能为final。
+
+2. AOP：用动态代理模式，在方法执行前后/异常时加入相关逻辑。执行业务代码时，动态注入关注点代码，即切面。
+Spring AOP：创建容器对象时，根据切入点表达式拦截的类，生成proxy对象。若object有实现接口用jdk代理；若没有用cglib代理。从容器获取proxy对象，运行时植入aop类的方法。
+用于：controller层参数校验；mysql读写分离；执行方法前判断权限；重要函数抛出异常时邮件通知；信息过滤，页面转发等。？？
