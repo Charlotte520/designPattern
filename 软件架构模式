@@ -1,0 +1,50 @@
+1. 分层
+系统可分解为多个子任务，每个子任务都在某抽象层，为上层提供服务。4层：UI，应用服务层，业务逻辑层，数据访问层。
+优：下层可被多个上层复用；易标准化；某层修改不影响其他层。
+缺：不通用；某些场景下可跳过某些层
+
+2.Client Server
+server监听多个client请求。
+优：适合客户端可请求的服务
+缺：请求被server不同线程处理；进程间通信会因不同client不同的呈现方式而产生开销
+
+3.主从 master-slave
+master向多个slave分配任务，并根据slave的返回结果计算出最终结果。eg. db主从复制
+优：精准
+缺：slave隔离；延迟；只适合可分解的问题
+
+4.管道-过滤器
+生产-消费数据流，每步处理都封装在一个filter组件。用管道进行缓冲/同步。eg. 编译器
+优：并发处理；容易添加fliter，可复用，扩展性好
+缺：效率受限于最慢的filter；数据传输开销
+
+5.代理
+组件解耦，通过rpc交互。proxy负责通信协调，server向proxy公开服务&feature，client从proxy获取服务。eg.消息队列
+优：动态更新、添加、删除对象
+缺：服务描述要标准化
+
+6.点对点
+每个节点同时作为client和server。eg. 文件分享 gnutella，g2；多媒体协议 p2ptv；私媒体 spotify
+优：去中心化；节点失败不敏感；可扩展
+缺：sla难保障；安全难；性能依赖于节点数量
+
+7.事件总线
+事件源，事件监听器，频道，事件总线。eg.通知服务
+优：易增加publisher、listener、connection
+缺：总线瓶颈
+
+8.MVC
+model：核心功能&数据；view：显示；controller：处理输入。eg. web
+优：model可有多个view
+缺：复杂度
+
+9.黑板
+适合没有确定性方案策略的问题。blackboard：solutions，包含接空间对象的结构化全局内存；knowledge source；controller：选择、配置、执行模块。所有组件都可访问blackboard，并添加生成的新数据。blackboard根据已有knowledge source的匹配规则，寻找特定类型的数据。
+eg. 语音识别、车辆识别&跟踪
+优：易扩展数据结构
+缺：同步
+
+10.解释器
+用于解释特定语言编写的程序。
+优：动态；灵活
+缺：慢
